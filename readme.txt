@@ -1,10 +1,10 @@
-=== Plugin Name ===
+=== OTF Regenerate Thumbnails ===
 Contributors: bfintal
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D2MK28E7BDLHC
 Tags: thumbnail, thumbnails, resize, regenerate, automatic, featured image, feature image, on the fly, otf
 Requires at least: 3.8
 Tested up to: 4.1
-Stable tag: 0.1
+Stable tag: 0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,7 @@ Automatically regenerates your thumbnails on the fly when thumbnail sizes change
 This plugin behaves similarly to [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/) except that images are resized automatically / on the fly, when they are used. Once created, they won't be processed again.
 
 Your thumbnails will now resize when:
+
 * Image Sizes in **Settings > Media** is modified,
 * Switching themes & plugins with different thumbnail / featured image sizes
 
@@ -33,6 +34,21 @@ Now head over to **Settings > Media** and change your thumbnail size to somethin
 Go back to your gallery that you previously created and refresh your browser. Most likely you *won't* be seeing **400 x 200** thumbnails there.
 
 OTF Regenerate Thumbnails fixes this for you.
+
+= Usage =
+
+OTF Regenerate Thumbnails should work right away, and your images should get resized when the dimensions get changed.
+
+**For developers & tinkerers, ensuring your images get resized properly requires you to use WordPress' image functions to display featured images and image attachments.** Don't worry, this is a good thing.
+
+Make sure you use these WordPress functions **every time you display images**:
+
+* [`wp_get_attachment_image_src`](http://codex.wordpress.org/Function_Reference/wp_get_attachment_image_src)
+* [`wp_get_attachment_image`](http://codex.wordpress.org/Function_Reference/wp_get_attachment_image)
+* [`the_post_thumbnail`](http://codex.wordpress.org/Function_Reference/the_post_thumbnail)
+* [`get_the_post_thumbnail`](http://codex.wordpress.org/Function_Reference/get_the_post_thumbnail)
+
+You can also add size *names* using [`add_image_size`](http://codex.wordpress.org/Function_Reference/add_image_size)
 
 = Features =
 
@@ -67,5 +83,14 @@ OTF Regenerate Thumbnails fixes this for you.
 
 == Changelog ==
 
-= 1.0 =
-First release
+= 0.3 =
+
+* Add new image size to attachment meta so WordPress can perform actions on the image
+
+= 0.2 =
+
+* Bug fix: image size names which do not exist
+
+= 0.1 =
+
+* First release

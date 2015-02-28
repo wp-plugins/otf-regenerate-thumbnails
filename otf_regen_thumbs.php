@@ -4,7 +4,7 @@ Plugin Name: OTF Regenerate Thumbnails
 Plugin URI: http://github.com
 Description: Automatically regenerates your thumbnails on the fly (OTF) after changing the thumbnail sizes or switching themes.
 Author: Benjamin Intal - Gambit Technologies Inc
-Version: 0.1
+Version: 0.3
 Author URI: http://gambit.ph
 */
 
@@ -35,7 +35,7 @@ if ( ! function_exists( 'gambit_otf_regen_thumbs_media_downsize' ) ) {
 		// all the theme/plugin-introduced sizes.
 		global $_gambit_otf_regen_thumbs_all_image_sizes;
 		if ( ! isset( $_gambit_otf_regen_thumbs_all_image_sizes ) ) {
-		    global $_wp_additional_image_sizes;
+			global $_wp_additional_image_sizes;
 			
 			$_gambit_otf_regen_thumbs_all_image_sizes = array();
 			$interimSizes = get_intermediate_image_sizes();
@@ -57,8 +57,8 @@ if ( ! function_exists( 'gambit_otf_regen_thumbs_media_downsize' ) ) {
 		// This now contains all the data that we have for all the image sizes
 		$allSizes = $_gambit_otf_regen_thumbs_all_image_sizes;
 	
-	    // If image size exists let WP serve it like normally
-	    $imagedata = wp_get_attachment_metadata( $id );
+		// If image size exists let WP serve it like normally
+		$imagedata = wp_get_attachment_metadata( $id );
 	
 		// Image attachment doesn't exist
 		if ( ! is_array( $imagedata ) ) {
@@ -67,9 +67,14 @@ if ( ! function_exists( 'gambit_otf_regen_thumbs_media_downsize' ) ) {
 		
 		// If the size given is a string / a name of a size
 		if ( is_string( $size ) ) {
+			
+			// If WP doesn't know about the image size name, then we can't really do any resizing of our own
+			if ( empty( $allSizes[ $size ] ) ) {
+				return false;
+			}
 		
 			// If the size has already been previously created, use it
-			if ( isset( $imagedata['sizes'][ $size ] ) && ! empty( $allSizes[ $size ] ) ) {
+			if ( ! empty( $imagedata['sizes'][ $size ] ) && ! empty( $allSizes[ $size ] ) ) {
 			
 				// But only if the size remained the same
 				if ( $allSizes[ $size ]['width'] == $imagedata['sizes'][ $size ]['width']
@@ -85,34 +90,34 @@ if ( ! function_exists( 'gambit_otf_regen_thumbs_media_downsize' ) ) {
 						return false;
 					}
 				}
-	        	
-	        }
+				
+			}
 			
 			// Resize the image
 			$resized = image_make_intermediate_size(
-	            get_attached_file( $id ),
-	            $allSizes[ $size ]['width'],
-	            $allSizes[ $size ]['height'],
-	            $allSizes[ $size ]['crop']
-	        );
+				get_attached_file( $id ),
+				$allSizes[ $size ]['width'],
+				$allSizes[ $size ]['height'],
+				$allSizes[ $size ]['crop']
+			);
 		
 			// Resize somehow failed
 			if ( ! $resized ) {
 				return false;
 			}
 		
-	        // Save the new size in WP
-	        $imagedata['sizes'][ $size ] = $resized;
+			// Save the new size in WP
+			$imagedata['sizes'][ $size ] = $resized;
 			
 			// Save some additional info so that we'll know next time whether we've resized this before
 			$imagedata['sizes'][ $size ]['width_query'] = $allSizes[ $size ]['width'];
 			$imagedata['sizes'][ $size ]['height_query'] = $allSizes[ $size ]['height'];
 			
-	        wp_update_attachment_metadata( $id, $imagedata );
+			wp_update_attachment_metadata( $id, $imagedata );
 		
-	        // Serve the resized image
-	        $att_url = wp_get_attachment_url( $id );
-	        return array( dirname( $att_url ) . '/' . $resized['file'], $resized['width'], $resized['height'], true );
+			// Serve the resized image
+			$att_url = wp_get_attachment_url( $id );
+			return array( dirname( $att_url ) . '/' . $resized['file'], $resized['width'], $resized['height'], true );
 		
 		
 		// If the size given is a custom array size
@@ -132,19 +137,26 @@ if ( ! function_exists( 'gambit_otf_regen_thumbs_media_downsize' ) ) {
 
 			// If not, resize the image...
 			$resized = image_make_intermediate_size(
-	            get_attached_file( $id ),
-	            $size[0],
-	            $size[1],
-	            true
-	        );
-		
+				get_attached_file( $id ),
+				$size[0],
+				$size[1],
+				true
+			);
+			
+			// Get attachment meta so we can add new size
+			$imagedata = wp_get_attachment_metadata( $id );
+
+			// Save the new size in WP so that it can also perform actions on it
+			$imagedata['sizes'][ $size[0] . 'x' . $size[1] ] = $resized;		   
+			wp_update_attachment_metadata( $id, $imagedata );
+				
 			// Resize somehow failed
 			if ( ! $resized ) {
 				return false;
 			}
 		
-	        // Then serve it
-	        return array( dirname( $att_url ) . '/' . $resized['file'], $resized['width'], $resized['height'], true );
+			// Then serve it
+			return array( dirname( $att_url ) . '/' . $resized['file'], $resized['width'], $resized['height'], true );
 		}
 	
 		return false;
